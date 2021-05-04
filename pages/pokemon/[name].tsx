@@ -1,4 +1,5 @@
 import { Heading } from '@chakra-ui/react';
+import LinkTo from 'components/LinkTo';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
@@ -51,6 +52,12 @@ function Pokemon({ isError, name, sprite }: Props) {
             Looks like <em>{pokemonQueryName}</em> doesn&apos;t exist
           </Heading>
         )}
+
+        <LinkTo href="/">
+          <Heading as="h6" size="md" my="3">
+            &larr; Back To Home
+          </Heading>
+        </LinkTo>
       </main>
 
       <style jsx>{`
@@ -61,6 +68,8 @@ function Pokemon({ isError, name, sprite }: Props) {
 
           place-content: center;
           place-items: center;
+
+          gap: 2rem;
         }
       `}</style>
     </>
