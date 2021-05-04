@@ -1,31 +1,33 @@
-import { useRouter } from 'next/router'
-import { useState } from 'react'
 import {
   FormControl,
   FormHelperText,
   FormLabel,
   Heading,
-  Input
-} from '@chakra-ui/react'
-import Head from 'next/head'
+  Input,
+} from '@chakra-ui/react';
+import Head from 'next/head';
+import { useRouter } from 'next/router';
+import { useState } from 'react';
 
 function Home() {
-  const [pokemonName, setPokemonName] = useState('')
+  const [pokemonName, setPokemonName] = useState('');
 
-  const router = useRouter()
+  const router = useRouter();
 
-  const handlePokemonName = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const input = event.target as HTMLInputElement
-    const pokemonName = input.value
+  const handlePokemonName = ({
+    target,
+  }: React.ChangeEvent<HTMLInputElement>) => {
+    const input = target as HTMLInputElement;
+    const inputValue = input.value;
 
-    setPokemonName(pokemonName)
-  }
+    setPokemonName(inputValue);
+  };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-    router.push(`/pokemon/${pokemonName.toLowerCase()}`)
-  }
+    await router.push(`/pokemon/${pokemonName.toLowerCase()}`);
+  };
 
   return (
     <>
@@ -46,7 +48,7 @@ function Home() {
               value={pokemonName}
               onChange={handlePokemonName}
             />
-            <FormHelperText>C'mon search for a Pokemon</FormHelperText>
+            <FormHelperText>C&apos;mon search for a Pokemon</FormHelperText>
           </FormControl>
         </form>
       </main>
@@ -66,7 +68,7 @@ function Home() {
         }
       `}</style>
     </>
-  )
+  );
 }
 
-export default Home
+export default Home;
