@@ -1,16 +1,19 @@
-import { GetStaticPaths, GetStaticProps } from 'next'
-import { Heading } from '@chakra-ui/react'
-import { useRouter } from 'next/router'
-import Head from 'next/head'
-import Image from 'next/image'
+import { Heading } from '@chakra-ui/react';
+import { GetStaticPaths, GetStaticProps } from 'next';
+import Head from 'next/head';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
 
 type Props = {
-  name: string
-  sprite: string
-}
+  isError: boolean;
+  name: string;
+  sprite: string;
+};
 
-function Pokemon({ name, sprite }: Props) {
-  const router = useRouter()
+function Pokemon({ isError, name, sprite }: Props) {
+  const router = useRouter();
+
+  const { name: pokemonQueryName } = router.query;
 
   if (router.isFallback) {
     return (
@@ -19,28 +22,35 @@ function Pokemon({ name, sprite }: Props) {
           height: '100vh',
           display: 'grid',
           placeContent: 'center',
-          placeItems: 'center'
+          placeItems: 'center',
         }}
       >
         <Heading as="h1" size="4xl">
           Loading . . .
         </Heading>
       </div>
-    )
+    );
   }
 
   return (
     <>
       <Head>
-        <title>{`${name}'s Info`}</title>
+        <title>{`${name ?? (pokemonQueryName as string)}'s Info`}</title>
       </Head>
 
       <main>
-        <Heading as="h2" size="2xl" my="3">
-          {name}
-        </Heading>
-
-        <Image src={sprite} alt={`${name} sprite`} height={96} width={96} />
+        {!isError ? (
+          <>
+            <Heading as="h2" size="2xl" my="3">
+              {name}
+            </Heading>
+            <Image src={sprite} alt={`${name} sprite`} height={96} width={96} />{' '}
+          </>
+        ) : (
+          <Heading as="h2" size="2xl" my="3">
+            Looks like <em>{pokemonQueryName}</em> doesn&apos;t exist
+          </Heading>
+        )}
       </main>
 
       <style jsx>{`
@@ -54,7 +64,7 @@ function Pokemon({ name, sprite }: Props) {
         }
       `}</style>
     </>
-  )
+  );
 }
 
 export const getStaticPaths: GetStaticPaths = async () => ({
@@ -62,39 +72,50 @@ export const getStaticPaths: GetStaticPaths = async () => ({
     { params: { name: 'pikachu' } },
     { params: { name: '25' } },
     { params: { name: 'bewear' } },
-    { params: { name: '760' } }
+    { params: { name: '760' } },
   ],
-  fallback: true
-})
+  fallback: true,
+});
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   type APIResponse = {
-    name: string
+    name: string;
     sprites: {
       other: {
         'official-artwork': {
-          front_default: string
-        }
-      }
-    }
+          front_default: string;
+        };
+      };
+    };
+  };
+
+  try {
+    const response = await fetch(
+      `https://pokeapi.co/api/v2/pokemon/${
+        params ? (params.name as string).toLowerCase() : 25
+      }`,
+    );
+
+    const { name, sprites } = (await response.json()) as APIResponse;
+
+    const normalizedName = `${name.charAt(0).toUpperCase()}${name.substr(1)}`;
+
+    return {
+      props: {
+        isError: false,
+        name: normalizedName,
+        sprite: sprites.other['official-artwork'].front_default,
+      },
+    };
+  } catch (error: unknown) {
+    console.error(error);
+
+    return {
+      props: {
+        isError: true,
+      },
+    };
   }
+};
 
-  const response = await fetch(
-    `https://pokeapi.co/api/v2/pokemon/${
-      params ? (params.name as string).toLowerCase() : 25
-    }`
-  )
-
-  const { name, sprites }: APIResponse = await response.json()
-
-  const normalizedName = `${name.charAt(0).toUpperCase()}${name.substr(1)}`
-
-  return {
-    props: {
-      name: normalizedName,
-      sprite: sprites.other['official-artwork'].front_default
-    }
-  }
-}
-
-export default Pokemon
+export default Pokemon;
